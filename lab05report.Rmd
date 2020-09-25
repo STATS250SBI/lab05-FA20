@@ -13,8 +13,6 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 source("plot_ss.R")
-download.file("http://www.openintro.org/stat/data/mlb11.RData", destfile = "mlb11.RData")
-load("mlb11.RData")
 ```
 
 ## Learning Objectives
@@ -40,7 +38,7 @@ load("mlb11.RData")
 1. `cor()`
 
 ### Weekly Advice
-This week, we're learning more about R "graphics" (e.g., making plots and graphs). The trick to working with graphics in R is to remember these two points:
+This week, we're learning more about R "graphics" (e.g., making plots and graphs). The trick to working with graphics in R is to remember these points:
 
 1. R "draws" graphs like ink on paper. You can create a graph (using, e.g., `plot()`), then add things to it by using other functions to draw on top of the graph. But because R draws in "ink", there's no eraser! The way to clean things up is to make the graph again.
 1. The way to get a graphic you like is by trying stuff and adjusting. **Don't be afraid to play around!**
@@ -107,7 +105,7 @@ plot(bill_depth_mm ~ body_mass_g,
 
 So it looks like one species is very different from the other two in terms of the relationship between bill depth and body mass! It seems like they have relatively deep bills but are also lighter than the other species. How can we tell which color corresponds to which species?
 
-R chooses colors from the *vector* of options we give it -- `c("midnightblue", "brown1", "mediumseagreen")` is a vector color names, just like 1:6 is a vector of consecutive integers from last week -- in the order of the levels of that categorical variable `penguins$species`. Remember that R orders these levels *alphabetically*! We can use the `levels()` function to see this order:
+R chooses colors from the *vector* of options we give it -- `c("midnightblue", "brown1", "mediumseagreen")` is a vector of color names, just like 1:6 is a vector of consecutive integers from last week -- in the order of the levels of that categorical variable `penguins$species`. Remember that R orders these levels *alphabetically*! We can use the `levels()` function to see this order:
 
 ```{r speciesLevels}
 levels(penguins$species)
@@ -162,10 +160,11 @@ legend("topright",
 
 ### Correlation Matrices
 
-Let's go back to the scatterplot we made last week.
+Let's go back to the scatterplot we made last week and update it to use the `~` operator.
 
 ```{r lengthMassPlot}
-plot(penguins$bill_length_mm, penguins$body_mass_g,
+plot(body_mass_g ~ bill_length_mm,
+     data = penguins,
      main = "Scatterplot of Penguin Body Mass versus Bill Length",
      xlab = "Bill Length (mm)",
      ylab = "Body Mass in (g)")
@@ -177,10 +176,13 @@ Last week, we said this was a moderately-strong linear relationship with no obvi
 cor(penguins$bill_length_mm, penguins$body_mass_g)
 ```
 
-If we wanted to consider the correlation between multiple quantitative variables, we could use `cor()` on every pair of them, but that's tedious. Instead, we'll compute a correlation *matrix*. To do this, we're going to give `cor()` a subset of `penguins` containing only the variables we want to look at the correlation between. To make this subset, we'll use the `subset()` function and the `select` argument. `select` is a vector of variable names in `penguins`.
+If we wanted to consider the correlation between multiple quantitative variables, we could use `cor()` on every pair of them, but that's tedious. Instead, we'll compute a correlation *matrix*. 
+
+To do this, first we should subset the `penguins` data to only consider numeric variables that are interesting to look at. Those variables are `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, and `body_mass_g` (`year` is numeric, but is not particularly of interest as it is the year the data was collected; feel free to add it in if you would like). To make this subset, we'll use the `subset()` function and the `select` argument. `select` is a vector of variable names in `penguins`. Then, we can find the correlation of this subset that we will call `numericPenguins`.
 
 ```{r correlationMatrix}
-cor(subset(penguins, select = c("bill_length_mm", "bill_depth_mm", "body_mass_g")))
+numericPenguins <- subset(penguins, select = c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"))
+cor(numericPenguins)
 ```
 
 Each "entry" in the correlation matrix is the correlation between the variables labeling that entry's row and column. So for example, the correlation between bill depth and bill length is about -0.229. 
@@ -189,7 +191,7 @@ Each "entry" in the correlation matrix is the correlation between the variables 
 
 We've actually already discussed most of what we need to perform linear regression in R, so let's jump right into it.
 
-
+We're going to perform a linear regression of body mass on bill length. This means we're going to use the bill length as the explanatory variable (x) and body mass as the response variable (y).
 We'll use the function `lm()`, and provide it a formula (`y ~ x`) and a `data` argument. We'll store that as an object called `reg1`. Then, to get detailed results, we'll use the `summary()` function.
 
 ```{r lm1}
@@ -197,7 +199,15 @@ reg1 <- lm(body_mass_g ~ bill_length_mm, data = penguins)
 summary(reg1)
 ```
 
-**MORE DETAILS ABOUT HOW TO INTERP OUTPUT**   
+As we read this table, the first two lines are just the code we typed in being displayed. The next piece dealing with *residuals* can be skipped over. We want the piece dealing with the **coefficients**. In the *coefficients* portion of the output, there are two rows of information with four columns. The column we will be dealing with in Lab 5 is the **Estimate** column. 
+
+The first row of information is called the **`(Intercept)`**. This represents information about the vertical (y) intercept. So if we go to the `Estimate` column in the `(Intercept)` row, we will get the value of the vertical (y) intercept for the least-squares regression line. Notice that the next row of information is called **`bill_length_mm`**, which is our explanatory (x) variable. This is a great way to verify that your logic of `y ~ x` was done correctly! This second row will always contain the name of the explanatory variable you chose. If we go to the `Estimate` column of the `bill_length_mm` row, we will get the value of the slope for the least-squares regression line.
+
+The next line has a value called the **residual standard error**, and this value is known as $s$. Then we will look at the line of output that has the **multiple R-squared** value -- *ignore the adjusted R-squared value*. 
+
+So again, the values we want to find from this output: 1) the vertical intercept of the least-squares regresison line from our sample data; 2) the slope of the least-squares regression line from our sample data; 3) the residual standard error, 4) the multiple r-squared value which is known as the *coefficient of determination*. You can see your lecture notes page 11 to learn more about this $R^2$ value.
+
+Run the chunk. Did you get a vertical intercept of 388.845, a slope of 86.792, a residual standard error of 651.4, and a coefficient of determination of 0.3475?
 
 We can also get more details about the regression through an ANOVA table, which we can compute using by giving the "regression model object" (`reg1`) to the `anova()` function:
 
@@ -205,9 +215,17 @@ We can also get more details about the regression through an ANOVA table, which 
 anova(reg1)
 ```
 
-** MORE DETAILS ABOUT HOW TO INTERP OUTPUT **
+This table gives us information that will help us compute some important values in regression. Notice that we have two rows of information. The first row is called `bill_length_mm`, which is the name of our explanatory (x) variable and represents our **linear model (M)**. The second row is called `Residuals`, and recall that a residual is the error on the response variable (so $e = y - \hat{y}$). We represent this as **Error (R)**. Next note the column names, such as `Sum Sq` and `Mean Sq`. 
 
-Then, when we're done with all of that, we can add thec estimated regression line to our scatterplot by giving the model object to the `abline()` function.
+In the `Sum Sq` column, the first value of 74792533 is known as the *SSM* and the second value of 140467133 is known as the *SSE*. How could we find *SST* which is the total of the `Sum Sq` columns? Add up 74792533 and 140467133 to get 215259666. 
+
+In the `Mean Sq` column, the first value of 74792533 is known as the *MSM* value and the second value of 424372 is known as the *MSE*. 
+
+We can use these values to calculate a few values, most notably the coefficient of determination $R^2$ and $s$. You can read more about these values on page 10 and 11 of your lecture notes.
+
+$R^2$ can be found by taking *SSM / SST*, so here, taking *74792533 / 215259666*. Verify that you got the same value from earlier. $s$ can be found by taking the square root of *MSE*. Verify that you got the same value from earlier by taking $\sqrt{424372}$.
+
+Then, when we're done with all of that, we can add the estimated regression line to our scatterplot by giving the model object to the `abline()` function.
 
 
 ```{r lengthMass-Regression-Plot}
@@ -217,13 +235,6 @@ plot(penguins$bill_length_mm, penguins$body_mass_g,
      ylab = "Body Mass in (g)")
 abline(reg1)
 ```
-
-<!-- ```{r vectorsExample,results= 'hide'} -->
-<!-- plot_ss(x = mlb11$at_bats, y = mlb11$runs) -->
-<!-- ``` -->
-
-
-
 
 ## Try It!
 Depending on your instruction method (in person, synchronous remote, asynchronous remote), complete the following exercises collaboratively. 
@@ -244,7 +255,7 @@ This week, we'll be using a [data set](https://github.com/rfordatascience/tidytu
 ```
 
 
-> **2.** Create a correlation matrix of the variables `total_cup_points`, `acidity`, `body`, and `balance`. `total_cup_points` represents a coffee's overall quality rating (0-100 points). The others represent a score of a coffee's acidity, body, and balance, respectively (0-10 points). Which pair of these variables have the strongest linear association?
+> **2.** Create a correlation matrix of the variables `total_cup_points`, `acidity`, `body`, and `balance`. `total_cup_points` represents a coffee's overall quality rating (0-100 points). The others represent a score of a coffee's acidity, body, and balance, respectively (0-10 points). Which pair of these variables have the strongest correlation?
 
 ```{r tryIt2, error = T}
 # Replace this comment with code required for Try It 2. (Remember that this text is a comment, so R ignores it; you can delete it if you want.) If you don't delete it, **start your code on a new line that doesn't start with #**
@@ -253,7 +264,7 @@ This week, we'll be using a [data set](https://github.com/rfordatascience/tidytu
 
 Replace this text with your answer to Try It 2.
 
-> **3.** Make a scatterplot of the two variables you chose in Try It 2. Feel free to play around with the color of the points, or the plotting character via `pch`. Use the variable descriptions in Try It 2 to determine which variable should be the explanatory variable and which should be the response.
+> **3.** Make a scatterplot of the two variables you chose in Try It 2. Is the relationship in fact linear? Feel free to play around with the color of the points, or the plotting character via `pch`. Use the variable descriptions in Try It 2 to determine which variable should be the explanatory variable and which should be the response.
 
 ```{r tryIt3, error = T}
 # Replace this comment with code required for Try It 3. (Remember that this text is a comment, so R ignores it; you can delete it if you want.) If you don't delete it, **start your code on a new line that doesn't start with #**
@@ -287,7 +298,7 @@ Replace this text with your answers to Try It 5.
 
 
 ## Dive Deeper
-In the Try It, you played around a little with data about real estate. Now, we're going to have you dive a little deeper.
+In the Try It, you played around a little with data about coffee ratings. Now, we're going to have you dive a little deeper.
 
 > **1.** How would you interpret the estimate of the slope coefficient we found in Try It 4? Speculate on the real-world impact of this estimate.
 
@@ -325,15 +336,15 @@ At the top of the document, make sure you've changed the `author` field to your 
 
 ### Submission instructions
 #### If you're using RStudio Cloud
-1. In the Files pane, check the box next to `lab03report.html`.
+1. In the Files pane, check the box next to `lab05report.html`.
 2. Click More > Export...
-3. Click Download and save the file on your computer in a folder you'll remember and be able to find later. You can just call the file `lab03report.html` or whatever else you'd like (as  long as you remember what you called it).
+3. Click Download and save the file on your computer in a folder you'll remember and be able to find later. You can just call the file `lab05report.html` or whatever else you'd like (as  long as you remember what you called it).
 
 #### If you're using RStudio installed on your computer
-1. locate the `lab03report.html` file on your computer. The file will be saved in the location indicated at the top of the files pane.
+1. locate the `lab05report.html` file on your computer. The file will be saved in the location indicated at the top of the files pane.
 
 #### Submission to Canvas
 
-1. Click the "Assignments" panel on the left side of the page. Scroll to find "Lab 3", and open the assignment. Click "Submit Assignment". 
-2. Towards the bottom of the page, you'll be able to choose `lab03report.html` from the folder you saved it in from RStudio Cloud or noted if you're using RStudio Desktop. **You will only be able to upload a .html file -- do not upload any other file type.**
+1. Click the "Assignments" panel on the left side of the page. Scroll to find "Lab 5", and open the assignment. Click "Submit Assignment". 
+2. Towards the bottom of the page, you'll be able to choose `lab05report.html` from the folder you saved it in from RStudio Cloud or noted if you're using RStudio Desktop. **You will only be able to upload a .html file -- do not upload any other file type.**
 3. Click "Submit Assignment". You're done! 
