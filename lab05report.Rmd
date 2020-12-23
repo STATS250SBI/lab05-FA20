@@ -97,9 +97,9 @@ One possible reason for the clustering might be the fact that our data set conta
 ```{r speciesColor}
 plot(bill_depth_mm ~ body_mass_g, 
      data = penguins,
-     main = "Scatterplot of Penguin Body Mass vs. Bill Depth",
-     xlab = "Bill Depth (mm)",
-     ylab = "Body Mass (g)",
+     main = "Scatterplot of Penguin Bill Depth vs. Body Mass",
+     xlab = "Body Mass (g)",
+     ylab = "Bill Depth (mm)",
      col = c("midnightblue", "brown1", "mediumseagreen")[penguins$species])
 ```
 
@@ -119,9 +119,9 @@ Let's make a legend (or key) so people can better understand our scatterplot.
 # Make the plot again
 plot(bill_depth_mm ~ body_mass_g, 
      data = penguins,
-     main = "Scatterplot of Penguin Body Mass vs. Bill Depth",
-     xlab = "Bill Depth (mm)",
-     ylab = "Body Mass (g)",
+     main = "Scatterplot of Penguin Bill Depth vs. Body Mass",
+     xlab = "Body Mass (g)",
+     ylab = "Bill Depth (mm)",
      col = c("midnightblue", "brown1", "mediumseagreen")[penguins$species])
 
 # Add a legend
@@ -144,9 +144,9 @@ If we want, we could make the plot again, this time giving each species its own 
 # Make the plot again
 plot(bill_depth_mm ~ body_mass_g, 
      data = penguins,
-     main = "Scatterplot of Penguin Body Mass vs. Bill Depth",
-     xlab = "Bill Depth (mm)",
-     ylab = "Body Mass (g)",
+     main = "Scatterplot of Penguin Bill Depth vs. Body Mass",
+     xlab = "Body Mass (g)",
+     ylab = "Bill Depth (mm)",
      col = c("midnightblue", "brown1", "mediumseagreen")[penguins$species],
      pch = c(0, 1, 2)[penguins$species])
 
